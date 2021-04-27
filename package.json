@@ -1,0 +1,17 @@
+{
+  "name": "haunted-places-data-service",
+  "version": "1.0.0",
+  "description": "They're here.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "load": "node src/load.js",
+    "start": "node src/app.js"
+  },
+  "author": "Guy Royse <guy@gyroyse.com>",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "ioredis": "^4.27.1"
+  }
+}
