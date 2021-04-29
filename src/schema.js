@@ -15,11 +15,14 @@ export default gql`
     name: String
     state: State
     coordinates: Coordinates
+    places: [Place]
   }
 
   type State {
     name: String,
     abbreviation: String
+    places: [Place]
+    cities: [City]
   }
 
   type Coordinates {
@@ -29,7 +32,11 @@ export default gql`
 
   type Query {
     place(id: ID!): Place
+    placesContaining(text: String!): [Place]
+    placesNear(latitude: Float!, longitude: Float!, radiusInMiles: Float!): [Place]
     city(city: String!, state: String!): City
+    cities: [City]
     state(state: String!): State
+    states: [State]
   }
 `
