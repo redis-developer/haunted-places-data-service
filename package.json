@@ -13,6 +13,7 @@
   "dependencies": {
     "apollo-server": "^2.23.0",
     "csv-parser": "^3.0.0",
+    "dataloader": "^2.0.0",
     "graphql": "^15.5.0",
     "ioredis": "^4.27.1"
   }

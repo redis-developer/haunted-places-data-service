@@ -1,3 +1,5 @@
+import DataLoader from 'dataloader'
+
 const PLACES_INDEX = 'places:index'
 const CITIES_INDEX = 'cities:index'
 const STATES_INDEX = 'states:index'
@@ -8,6 +10,23 @@ export default class HauntedPlacesDataSource {
 
   constructor(redis) {
     this.redis = redis
+    this.loader = new DataLoader(
+      requests => this.load(requests),
+      { cacheKeyFn: JSON.stringify }
+    )
+  }
+
+  async load(requests) {
+    return Promise.all(requests.map(async request => {
+
+      if (request.type === 'hash')
+        return this.redis.hgetall(request.key)
+
+      if (request.type === 'search')
+        return this.redis.call(
+          'FT.SEARCH', request.index, request.query,
+          'LIMIT', 0, LIMIT)
+    }))
   }
 
   async fetchPlace(id) {
@@ -51,17 +70,22 @@ export default class HauntedPlacesDataSource {
   }
 
   async fetch(key) {
-    return this.redis.hgetall(key)
+    return this.loader.load({ type: 'hash', key })
   }
 
   async find(index, query) {
-    let [count, ...foundKeysAndValues] = await this.redis.call(
-      'FT.SEARCH', index, query,
-      'LIMIT', 0, LIMIT)
+    let [count, ...foundKeysAndValues] = await this.loader.load({ type: 'search', index, query })
 
-    return foundKeysAndValues
+    let keys = foundKeysAndValues
+      .filter((_entry, index) => index % 2 === 0)
+
+    let values = foundKeysAndValues
       .filter((_entry, index) => index % 2 !== 0)
       .map(this.arrayToObject)
+
+    keys.forEach((key, index) => this.loader.prime({ type: 'hash', key }, values[index]))
+
+    return values
   }
 
   arrayToObject(array) {
